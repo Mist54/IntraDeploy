@@ -1,0 +1,65 @@
+## .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.vspscc
+*.vssscc
+.vs/
+*.DotSettings.user
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+## Build / test outputs
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+## Logs and local runtime data
+*.log
+logs/
+Log/
+
+## IDE / editor / agent tooling (never commit)
+.cursor/
+.freebuff/
+.vscode/
+.idea/
+*.code-workspace
+
+## OS junk
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## Local secrets / operator state (if ever copied into repo)
+*.pfx
+*.p12
+.env
+.env.*
+!.env.example
+**/secrets/
+**/App_Data/
+uistate.ini
+history.jsonl
+
+## Publish / deploy scratch
+*.publish.xml
+*.azurePubxml
+PublishProfiles/
+.deploying-bak/

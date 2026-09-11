@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6FFB16C9-87E2-45B0-81AE-C9545FBF4EE8}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>IntraDeploy</RootNamespace>
+    <AssemblyName>IntraDeploy</AssemblyName>
+    <ApplicationIcon>Images\IntraDeploy.ico</ApplicationIcon>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Krypton.Toolkit" Version="105.26.7.201" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient.SNI" Version="6.0.3" />
+    <PackageReference Include="Microsoft.Web.Administration" Version="11.1.0" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.12" />
+    <PackageReference Include="System.ValueTuple" Version="4.6.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Configuration\AppConfig.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\SecretRedaction.cs" />
+    <Compile Include="Models\ApplicationInfo.cs" />
+    <Compile Include="Models\ApplicationProbeResult.cs" />
+    <Compile Include="Models\ApplicationType.cs" />
+    <Compile Include="Models\CertificateInfo.cs" />
+    <Compile Include="Models\DatabaseMode.cs" />
+    <Compile Include="Models\DatabaseSettings.cs" />
+    <Compile Include="Models\DeploymentMode.cs" />
+    <Compile Include="Models\DeploymentPlan.cs" />
+    <Compile Include="Models\DeploymentRequest.cs" />
+    <Compile Include="Models\DeploymentResult.cs" />
+    <Compile Include="Models\DeployHistoryEntry.cs" />
+    <Compile Include="Models\DeploymentStep.cs" />
+    <Compile Include="Models\IisLiveState.cs" />
+    <Compile Include="Models\IisMode.cs" />
+    <Compile Include="Models\IisSettings.cs" />
+    <Compile Include="Models\PreflightResult.cs" />
+    <Compile Include="Models\ProgressEventArgs.cs" />
+    <Compile Include="Services\ApplicationDetector.cs" />
+    <Compile Include="Services\ConfigurationService.cs" />
+    <Compile Include="Services\DatabaseService.cs" />
+    <Compile Include="Services\DeploymentService.cs" />
+    <Compile Include="Services\FileService.cs" />
+    <Compile Include="Services\IisService.cs" />
+    <Compile Include="Services\PostDeployHookRunner.cs" />
+    <Compile Include="Services\PreflightService.cs" />
+    <Compile Include="UI\Branding.cs" />
+    <Compile Include="UI\SqlCredentialsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\DeploymentConfirmationDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\DeploymentResultDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\RollbackVersionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\RecentDeploymentsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\MainForm.Layout.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\MainForm.Events.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\MainForm.Deploy.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utilities\ElevationHelper.cs" />
+    <Compile Include="Utilities\ExplorerFolderPicker.cs" />
+    <Compile Include="Utilities\PortHelper.cs" />
+    <Compile Include="Utilities\RecentPathsStore.cs" />
+    <Compile Include="Utilities\DeployHistoryStore.cs" />
+    <Compile Include="Utilities\ValidationHelper.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\IntraDeploy.png" />
+    <Content Include="Images\IntraDeployLogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\IntraDeploy.ico">
+      <LogicalName>IntraDeploy.ico</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Images\IntraDeploy.png">
+      <LogicalName>IntraDeployBranding.png</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
