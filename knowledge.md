@@ -95,7 +95,7 @@ IntraDeploy is a single WinForms executable. The UI collects a `DeploymentReques
 | Live IIS tests | Build main + `msbuild LiveIisTest\LiveIisTest.csproj /t:Build` then run elevated `LiveIisTest\bin\Debug\net48\LiveIisTest.exe` | Creates/removes test IIS objects |
 | Make icon | `msbuild Tools\MakeIcon\MakeIcon.csproj /t:Build` then run with PNG/ICO paths | Optional asset regen |
 | Lint / analyzers | *(none configured)* | Use MSBuild WarningLevel 4; treat CS warnings as errors with `/warnaserror` if desired |
-| CI | `.github/workflows/build.yml`, `develop-ci.yml`, `code-quality.yml` | GitHub Actions: Debug + Release build of main project; SmokeTest build + `IlProbe.exe` run on Debug only (SmokeTest HintPath is hardcoded to `bin\Debug`). `build.yml` runs on main/master/develop; `develop-ci.yml` re-runs on develop with artifact verification; `code-quality.yml` fails on compiler/NuGet warnings (Release analysis build) |
+| CI | `.github/workflows/build.yml`, `develop-ci.yml`, `code-quality.yml`, `release-build-deploy.yml` | GitHub Actions: Debug + Release build of main project; SmokeTest build + `IlProbe.exe` run on Debug only (SmokeTest HintPath is hardcoded to `bin\Debug`). `build.yml` runs on main/master/develop; `develop-ci.yml` re-runs on develop with artifact verification; `code-quality.yml` fails on compiler/NuGet warnings (Release analysis build); `release-build-deploy.yml` builds Release on main/merged PRs, uploads artifacts, and creates a GitHub Release on `v*` tags |
 
 Example (PowerShell, VS MSBuild on PATH or full path):
 
