@@ -1,0 +1,61 @@
+name: Release to Main
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize ]
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    runs-on: windows-latest
+    name: Prepare Release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
+      # PackageReference restore — `nuget restore` does not apply to this repo
+      # (no packages.config; solution is IntraDeploy.slnx).
+      - name: Restore NuGet packages
+        run: msbuild IntraDeploy.csproj /t:Restore /p:Configuration=Release
+
+      - name: Build Release
+        run: msbuild IntraDeploy.csproj /t:Build /p:Configuration=Release
+
+      - name: Collect release artifacts
+        shell: powershell
+        run: |
+          $version = (Get-Item "bin\Release\IntraDeploy.exe").VersionInfo.ProductVersion
+          Write-Host "Building release version: $version"
+
+          if (Test-Path "bin\Release\IntraDeploy.exe") {
+            Write-Host "✓ Release binary ready"
+            Write-Host "Version: $version"
+          } else {
+            Write-Host "✗ Release build failed"
+            exit 1
+          }
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: IntraDeploy-Release
+          path: |
+            bin\Release\IntraDeploy.exe
+            bin\Release\IntraDeploy.exe.config
+          if-no-files-found: error
+
+      - name: Verify no uncommitted changes
+        shell: powershell
+        run: |
+          if (git status --porcelain) {
+            Write-Host "✗ Uncommitted changes detected"
+            exit 1
+          } else {
+            Write-Host "✓ Repository clean"
+          }
