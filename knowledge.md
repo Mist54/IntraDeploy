@@ -44,6 +44,7 @@ IntraDeploy/
 ├── Tools/MakeIcon/            Build-time PNG → multi-size ICO utility
 ├── knowledge.md               AI/onboarding knowledge base (this file)
 ├── README.md                  Human project overview
+├── .gitignore                 .NET/VS + IDE + coding-agent trace ignores
 └── documentation/             DEV.md (developers) + MANUAL.md (operators)
 ```
 
@@ -94,6 +95,7 @@ IntraDeploy is a single WinForms executable. The UI collects a `DeploymentReques
 | Live IIS tests | Build main + `msbuild LiveIisTest\LiveIisTest.csproj /t:Build` then run elevated `LiveIisTest\bin\Debug\net48\LiveIisTest.exe` | Creates/removes test IIS objects |
 | Make icon | `msbuild Tools\MakeIcon\MakeIcon.csproj /t:Build` then run with PNG/ICO paths | Optional asset regen |
 | Lint / analyzers | *(none configured)* | Use MSBuild WarningLevel 4; treat CS warnings as errors with `/warnaserror` if desired |
+| CI | `.github/workflows/build.yml` | GitHub Actions: Debug + Release build of main project; SmokeTest build + `IlProbe.exe` run on Debug only (SmokeTest HintPath is hardcoded to `bin\Debug`) |
 
 Example (PowerShell, VS MSBuild on PATH or full path):
 
@@ -139,6 +141,10 @@ Example (PowerShell, VS MSBuild on PATH or full path):
 - Explicit `{}` blocks even for single-line `if`/`for`
 - C# 7.3-compatible patterns in helper projects (`out var` used in main where available)
 - Prefer early returns; keep IIS/SQL logic out of the UI layer
+
+**Repo hygiene:**
+- Coding-agent / IDE traces are never committed: `.cursor/`, `.cursorrules`, `.cursorignore`, `.freebuff/`, `.vscode/`, `.idea/`, `*.code-workspace` (see `.gitignore`)
+- Keep `.gitignore` agent-tooling entries up to date when introducing a new agent/IDE
 
 ## Important Patterns
 

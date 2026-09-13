@@ -1,0 +1,51 @@
+name: Build & Compile CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
+      # PackageReference restore — `nuget restore` does not apply to this repo
+      # (no packages.config; solution is IntraDeploy.slnx).
+      - name: Restore NuGet packages
+        run: msbuild IntraDeploy.csproj /t:Restore /p:Configuration=${{ matrix.configuration }}
+
+      - name: Build project (${{ matrix.configuration }})
+        run: msbuild IntraDeploy.csproj /t:Build /p:Configuration=${{ matrix.configuration }}
+
+      - name: Check build artifacts
+        shell: powershell
+        run: |
+          if (Test-Path "bin\${{ matrix.configuration }}\IntraDeploy.exe") {
+            Write-Host "✓ IntraDeploy.exe built successfully"
+          } else {
+            Write-Host "✗ IntraDeploy.exe not found"
+            exit 1
+          }
+
+      # SmokeTest references ..\bin\Debug\IntraDeploy.exe (hardcoded HintPath),
+      # so it can only be built/run against the Debug output.
+      - name: Build SmokeTest (${{ matrix.configuration }})
+        if: matrix.configuration == 'Debug'
+        run: msbuild SmokeTest\SmokeTest.csproj /t:Restore,Build /p:Configuration=${{ matrix.configuration }}
+
+      - name: Run smoke tests (IlProbe)
+        if: matrix.configuration == 'Debug'
+        shell: powershell
+        run: .\SmokeTest\bin\Debug\IlProbe.exe

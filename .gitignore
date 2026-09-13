@@ -36,6 +36,8 @@ Log/
 
 ## IDE / editor / agent tooling (never commit)
 .cursor/
+.cursorrules
+.cursorignore
 .freebuff/
 .vscode/
 .idea/
