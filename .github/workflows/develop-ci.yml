@@ -1,0 +1,73 @@
+name: Develop Integration CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: Build & Test on Develop
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
+      # PackageReference restore — `nuget restore` does not apply to this repo
+      # (no packages.config; solution is IntraDeploy.slnx).
+      - name: Restore NuGet packages
+        run: msbuild IntraDeploy.csproj /t:Restore /p:Configuration=${{ matrix.configuration }}
+
+      - name: Build project (${{ matrix.configuration }})
+        run: msbuild IntraDeploy.csproj /t:Build /p:Configuration=${{ matrix.configuration }}
+
+      # SmokeTest references ..\bin\Debug\IntraDeploy.exe (hardcoded HintPath),
+      # so it can only be built/run against the Debug output.
+      - name: Build SmokeTest (${{ matrix.configuration }})
+        if: matrix.configuration == 'Debug'
+        run: msbuild SmokeTest\SmokeTest.csproj /t:Restore,Build /p:Configuration=${{ matrix.configuration }}
+
+      - name: Run Smoke Tests
+        if: matrix.configuration == 'Debug'
+        shell: powershell
+        run: |
+          Write-Host "Running smoke tests..."
+          if (Test-Path "SmokeTest\bin\Debug\IlProbe.exe") {
+            & "SmokeTest\bin\Debug\IlProbe.exe"
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "✓ Smoke tests passed"
+            } else {
+              Write-Host "✗ Smoke tests failed"
+              exit 1
+            }
+          } else {
+            Write-Host "✗ IlProbe.exe not found"
+            exit 1
+          }
+
+      - name: Verify build artifacts
+        shell: powershell
+        run: |
+          $errors = 0
+          if (-not (Test-Path "bin\${{ matrix.configuration }}\IntraDeploy.exe")) {
+            Write-Host "✗ IntraDeploy.exe not found"
+            $errors++
+          } else {
+            Write-Host "✓ IntraDeploy.exe found"
+          }
+          if (-not (Test-Path "bin\${{ matrix.configuration }}\IntraDeploy.exe.config")) {
+            Write-Host "✗ IntraDeploy.exe.config not found"
+            $errors++
+          } else {
+            Write-Host "✓ IntraDeploy.exe.config found"
+          }
+          exit $errors
