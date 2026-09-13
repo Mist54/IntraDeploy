@@ -1,0 +1,111 @@
+name: Release Build & Deploy
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+    types: [ closed ]
+
+jobs:
+  release-build:
+    # Only run for merged PRs, not closed-but-unmerged ones.
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: windows-latest
+    name: Build Release Version
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for version detection
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
+      # PackageReference restore — `nuget restore` does not apply to this repo
+      # (no packages.config; solution is IntraDeploy.slnx).
+      - name: Restore NuGet packages
+        run: msbuild IntraDeploy.csproj /t:Restore /p:Configuration=Release
+
+      - name: Extract version from AssemblyInfo
+        id: version
+        shell: powershell
+        run: |
+          $assemblyInfo = Get-Content "Properties\AssemblyInfo.cs" -Raw
+          if ($assemblyInfo -match 'AssemblyVersion\("([^"]+)"\)') {
+            $version = $matches[1]
+            Write-Host "Version detected: $version"
+          } else {
+            $version = "1.0.0"
+            Write-Host "Version not found, using default: $version"
+          }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build Release Version
+        run: msbuild IntraDeploy.csproj /t:Build /p:Configuration=Release
+
+      - name: Verify Release Artifacts
+        shell: powershell
+        run: |
+          Write-Host "Verifying release artifacts..."
+          $artifacts = @(
+            "bin\Release\IntraDeploy.exe",
+            "bin\Release\IntraDeploy.exe.config"
+          )
+
+          $missing = @()
+          foreach ($artifact in $artifacts) {
+            if (Test-Path $artifact) {
+              Write-Host "✓ Found: $artifact"
+            } else {
+              Write-Host "✗ Missing: $artifact"
+              $missing += $artifact
+            }
+          }
+
+          if ($missing.Count -gt 0) {
+            Write-Host "✗ Release build failed - missing artifacts"
+            exit 1
+          }
+
+          Write-Host "`n✓ All release artifacts verified"
+
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: IntraDeploy-Release
+          path: bin/Release/
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Create Release Notes
+        id: release_notes
+        shell: powershell
+        run: |
+          git log -1 --pretty=%B | Out-File -FilePath release-notes.md -Encoding utf8
+          Write-Host "Release notes written (commit message of HEAD)"
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "IntraDeploy ${{ github.ref_name }}" \
+            --notes-file release-notes.md \
+            bin/Release/IntraDeploy.exe bin/Release/IntraDeploy.exe.config
+
+      - name: Notify Release Success
+        shell: powershell
+        run: |
+          Write-Host "=========================================="
+          Write-Host "✓ RELEASE BUILD COMPLETED SUCCESSFULLY"
+          Write-Host "=========================================="
+          Write-Host "Version: ${{ steps.version.outputs.version }}"
+          Write-Host "Branch: main"
+          Write-Host "Artifacts: bin/Release/"
+          Write-Host "=========================================="
