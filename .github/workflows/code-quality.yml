@@ -1,0 +1,39 @@
+name: Code Quality Check
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  code-analysis:
+    runs-on: windows-latest
+    name: Code Quality Analysis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
+
+      # PackageReference restore — `nuget restore` does not apply to this repo
+      # (no packages.config; solution is IntraDeploy.slnx).
+      - name: Restore NuGet packages
+        run: msbuild IntraDeploy.csproj /t:Restore /p:Configuration=Release
+
+      - name: Build for analysis (log warnings)
+        shell: powershell
+        run: msbuild IntraDeploy.csproj /t:Build /p:Configuration=Release /p:TreatWarningsAsErrors=false /flp:logfile=build.log;verbosity=minimal
+
+      - name: Check for compiler warnings
+        shell: powershell
+        run: |
+          $warnings = Select-String -Path "build.log" -Pattern ":\s*warning\s+[A-Z]{2,4}\d+" -AllMatches
+          if ($warnings) {
+            Write-Host "✗ Found $($warnings.Count) warning(s):"
+            $warnings | ForEach-Object { Write-Host "  $($_.Line.Trim())" }
+            exit 1
+          }
+          Write-Host "✓ No compiler warnings"
