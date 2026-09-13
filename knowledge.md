@@ -45,6 +45,7 @@ IntraDeploy/
 ├── knowledge.md               AI/onboarding knowledge base (this file)
 ├── README.md                  Human project overview
 ├── .gitignore                 .NET/VS + IDE + coding-agent trace ignores
+├── .github/workflows/         GitHub Actions CI (build, develop, quality, release)
 └── documentation/             DEV.md (developers) + MANUAL.md (operators)
 ```
 
@@ -101,6 +102,22 @@ Example (PowerShell, VS MSBuild on PATH or full path):
 
 ```powershell
 & "${env:ProgramFiles}\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" IntraDeploy.csproj /t:Restore,Build /p:Configuration=Debug
+```
+
+## Branching Model
+
+- `main` — protected: direct pushes are blocked by branch protection, so all changes arrive via pull requests.
+- `develop` — integration branch branched from `main`; CI runs on every push. Keep it aligned with `main` (fast-forward it when `main` advances).
+- Feature / CI branches — short-lived, pushed to `origin`, merged via PR into `main` (or `develop`).
+
+Typical flow:
+
+```bash
+git checkout -b feature/xyz origin/main   # branch out from main
+# ... work, commit ...
+git push -u origin feature/xyz            # then open a PR on GitHub
+# after the PR merges, align develop if needed:
+git fetch origin && git push origin main:develop   # fast-forward, no force required
 ```
 
 ## Coding Conventions
